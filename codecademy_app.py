@@ -4,9 +4,8 @@ import streamlit as st
 from src.access_control import require_demo_access
 from src.codecademy_config import APP_TITLE, CREATIVE_TERRITORIES, MOTIONS, ROLE_ORDER, ROLE_PERFORMANCE
 from src.codecademy_data_loader import load_workbook
-from src.spotify_recommendations import role_health, signal_status
-from src.theme import APP_CSS
-from src.ui_components import (
+from src.codecademy_theme import APP_CSS
+from src.codecademy_ui_components import (
     format_signal_value,
     render_diagnostic_card,
     render_insight_card,
@@ -17,8 +16,9 @@ from src.ui_components import (
     render_status_chip,
     safe_table,
 )
+from src.spotify_recommendations import role_health, signal_status
 
-st.set_page_config(page_title=APP_TITLE, page_icon=":material/analytics:", layout="wide")
+st.set_page_config(page_title=APP_TITLE, page_icon=":material/terminal:", layout="wide")
 st.markdown(APP_CSS, unsafe_allow_html=True)
 
 if not require_demo_access(st.secrets, st.session_state):
@@ -49,10 +49,13 @@ workbook = get_data()
 with st.sidebar:
     st.markdown(
         """
+        <div class="brand-wordmark"><span class="brand-box">code</span>cademy</div>
         <div class="eyebrow">Pitch prototype</div>
-        <h2 style="margin-top:.35rem; color:#F4F7F5;">Codecademy Creative Intelligence</h2>
-        <p style="color:#9EFF8A;font-size:.82rem;margin-top:-.4rem">
-            Creative diagnostics + production planning
+        <h2 style="margin:.35rem 0 0; color:#FFFFFF; line-height:1.02;">
+            Creative<br><span class="terminal-accent">/intelligence</span>
+        </h2>
+        <p style="color:#B8B8B8;font-size:.82rem;margin-top:.65rem">
+            Diagnostics + production planning
         </p>
         """,
         unsafe_allow_html=True,
@@ -71,7 +74,7 @@ with st.sidebar:
         label_visibility="collapsed",
     )
     st.divider()
-    st.markdown(render_status_chip("Illustrative demo", "positive"), unsafe_allow_html=True)
+    st.markdown(render_status_chip("Illustrative demo", "neutral"), unsafe_allow_html=True)
     st.caption("Sample data only · Not client performance")
     st.caption("Directional framework · Pitch-safe")
 
