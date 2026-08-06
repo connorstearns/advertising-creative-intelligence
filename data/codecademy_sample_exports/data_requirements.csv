@@ -1,0 +1,7 @@
+data_source,required_fields,owner,cadence,why_it_matters
+Paid media delivery,Date platform campaign ad asset ID spend impressions clicks conversions,Media agency,Weekly,Connects investment and outcomes to each named asset
+Creative taxonomy,Asset ID territory activation role format audience product motion variant,Creative and media teams,At launch,Enables territory role audience and product diagnostics
+Web and product analytics,Landing path trial start enrollment activation progression and subscription events,Growth analytics,Weekly,Measures whether media routes learners to the right experience
+Lifecycle and subscription data,Customer ID product renewal upgrade cross-sell and win-back status,Lifecycle and product teams,Monthly,Connects customer growth creative to retained and expanded value
+Teams CRM outcomes,Account ID buyer segment seats trial demo opportunity revenue renewal expansion,Revenue operations,Monthly,Adds downstream quality and account economics to the Teams motion
+Search and AI visibility,Query cluster ranking citation source sentiment and landing destination,SEO and content teams,Monthly,Tracks discovery and consideration before the paid click
