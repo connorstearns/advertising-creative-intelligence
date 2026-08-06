@@ -20,6 +20,60 @@ from src.spotify_recommendations import role_health, signal_status
 
 st.set_page_config(page_title=APP_TITLE, page_icon=":material/terminal:", layout="wide")
 st.markdown(APP_CSS, unsafe_allow_html=True)
+st.markdown(
+    """
+    <style>
+    /* Horizontal activation-role selector styled as Codecademy-like filter tabs. */
+    .st-key-activation_role_filter {
+      margin: 0 0 1rem;
+    }
+
+    .st-key-activation_role_filter div[role="radiogroup"] {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.55rem;
+    }
+
+    .st-key-activation_role_filter div[role="radiogroup"] > label {
+      min-height: 2.45rem;
+      padding: 0.55rem 0.78rem;
+      margin: 0;
+      border: 1px solid #444444;
+      border-radius: 2px;
+      background: #101010;
+      cursor: pointer;
+      transition: border-color 120ms ease, background 120ms ease, color 120ms ease;
+    }
+
+    .st-key-activation_role_filter div[role="radiogroup"] > label:hover {
+      border-color: #FFD300;
+      background: #171717;
+    }
+
+    .st-key-activation_role_filter div[role="radiogroup"] > label:has(input:checked) {
+      border-color: #FFD300;
+      background: #FFD300;
+      box-shadow: inset 0 -3px 0 #FFD300;
+    }
+
+    .st-key-activation_role_filter div[role="radiogroup"] > label p {
+      color: #FFFFFF !important;
+      font-size: 0.78rem;
+      font-weight: 680;
+    }
+
+    .st-key-activation_role_filter div[role="radiogroup"] > label:has(input:checked) p {
+      color: #050505 !important;
+      font-weight: 760;
+    }
+
+    .st-key-activation_role_filter div[role="radiogroup"] > label > div:first-child {
+      display: none;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
 
 if not require_demo_access(st.secrets, st.session_state):
     st.stop()
@@ -49,8 +103,7 @@ workbook = get_data()
 with st.sidebar:
     st.markdown(
         """
-        <div class="brand-wordmark"><span class="brand-box">code</span>cademy</div>
-        <div class="eyebrow">Pitch prototype</div>
+        <div class="eyebrow">Prepared for Codecademy</div>
         <h2 style="margin:.35rem 0 0; color:#FFFFFF; line-height:1.02;">
             Creative<br><span class="terminal-accent">/intelligence</span>
         </h2>
@@ -83,26 +136,35 @@ if page == "Activation Role Performance":
         "Is each activation role doing its job? Current-period signals are compared with the prior period to diagnose health and direct the next production action.",
         "Role-specific learning system",
     )
-    st.markdown(
-        """
-        <div class="hero-flow" style="margin:0 0 1rem">
-          <span class="flow-step">Demand Creation</span><span class="flow-arrow">→</span>
-          <span class="flow-step">Reinforcement</span><span class="flow-arrow">→</span>
-          <span class="flow-step">Demand Capture</span><span class="flow-arrow">→</span>
-          <span class="flow-step">Customer Growth</span>
-        </div>
-        """,
-        unsafe_allow_html=True,
+    selected_role = st.radio(
+        "Activation role",
+        ROLE_ORDER,
+        horizontal=True,
+        index=0,
+        label_visibility="collapsed",
+        key="activation_role_filter",
     )
     performance = filter_motion(workbook.get("report_role_signal_trends"), motion)
     if performance.empty:
         render_insight_card("Role-specific trend data is not available.", title="Performance data unavailable", tone="info")
     else:
-        for role in ROLE_ORDER:
-            definition = ROLE_PERFORMANCE[role]
-            role_frame = performance[performance["role"] == role]
+        definition = ROLE_PERFORMANCE[selected_role]
+        role_frame = performance[performance["role"] == selected_role]
+        if role_frame.empty:
+            render_insight_card(
+                f"No {selected_role} signals are available for the selected growth motion.",
+                title="Role data unavailable",
+                tone="info",
+            )
+        else:
             health = role_health(role_frame)
-            render_role_header(role, definition["job"], definition["question"], str(health["status"]), str(health["tone"]))
+            render_role_header(
+                selected_role,
+                definition["job"],
+                definition["question"],
+                str(health["status"]),
+                str(health["tone"]),
+            )
             columns = st.columns(3, gap="small")
             for column, (_, signal) in zip(columns, role_frame.head(3).iterrows()):
                 with column:
