@@ -76,7 +76,6 @@ with st.sidebar:
     st.divider()
     st.markdown(render_status_chip("Illustrative demo", "neutral"), unsafe_allow_html=True)
     st.caption("Sample data only · Not client performance")
-    st.caption("Directional framework · Pitch-safe")
 
 if page == "Activation Role Performance":
     render_section_header(
