@@ -1,6 +1,8 @@
 import hmac
+import inspect
 import logging
 from collections.abc import Mapping, MutableMapping
+from html import escape
 
 import streamlit as st
 
@@ -44,18 +46,42 @@ def access_is_granted(
     return False
 
 
-def require_demo_access(secrets: Mapping, session_state: MutableMapping) -> bool:
+def _caller_app_title() -> str | None:
+    """Read APP_TITLE from the calling Streamlit app when it is available."""
+    frame = inspect.currentframe()
+    try:
+        require_frame = frame.f_back if frame else None
+        caller_frame = require_frame.f_back if require_frame else None
+        value = caller_frame.f_globals.get("APP_TITLE") if caller_frame else None
+        if value is None:
+            return None
+        title = str(value).strip()
+        return title or None
+    finally:
+        del frame
+
+
+def require_demo_access(
+    secrets: Mapping,
+    session_state: MutableMapping,
+    *,
+    eyebrow: str = "Access-controlled demo",
+    title: str | None = None,
+    description: str = "Enter the demo password to view the sample dashboard.",
+) -> bool:
     if access_is_granted(secrets, session_state):
         return True
+
+    resolved_title = title or _caller_app_title() or "Spotify Advertising Creative Intelligence"
 
     _, center, _ = st.columns([1, 1.35, 1])
     with center:
         st.markdown(
-            """
+            f"""
             <div class="access-panel">
-              <div class="eyebrow">Access-controlled demo</div>
-              <div class="access-title">Spotify Advertising Creative Intelligence</div>
-              <div class="access-copy">Enter the demo password to view the sample dashboard.</div>
+              <div class="eyebrow">{escape(eyebrow)}</div>
+              <div class="access-title">{escape(resolved_title)}</div>
+              <div class="access-copy">{escape(description)}</div>
             </div>
             """,
             unsafe_allow_html=True,
