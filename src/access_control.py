@@ -62,7 +62,7 @@ def _caller_app_title() -> str | None:
 
 
 def _render_access_theme(title: str) -> None:
-    """Apply app-specific styling to the access form when needed."""
+    """Apply app-specific Codecademy interface overrides when needed."""
     if "codecademy" not in title.casefold():
         return
 
@@ -99,6 +99,57 @@ def _render_access_theme(title: str) -> None:
           box-shadow: 0 0 0 1px #FFD300 !important;
           outline: none !important;
         }
+
+        [data-testid="stSidebar"] [data-testid="stSelectbox"] div[data-baseweb="select"] > div {
+          min-height: 2.55rem;
+          border: 1px solid #FFD300 !important;
+          border-radius: 2px !important;
+          background: #050505 !important;
+          box-shadow: none !important;
+        }
+
+        [data-testid="stSidebar"] [data-testid="stSelectbox"] div[data-baseweb="select"] > div:hover {
+          background: #151515 !important;
+        }
+
+        [data-testid="stSidebar"] [data-testid="stSelectbox"] div[data-baseweb="select"] > div:focus-within {
+          border-color: #FFD300 !important;
+          background: #050505 !important;
+          box-shadow: 0 0 0 1px #FFD300 !important;
+        }
+
+        [data-testid="stSidebar"] [data-testid="stSelectbox"] div[data-baseweb="select"] span,
+        [data-testid="stSidebar"] [data-testid="stSelectbox"] div[data-baseweb="select"] input {
+          color: #FFD300 !important;
+          -webkit-text-fill-color: #FFD300 !important;
+          font-weight: 700;
+          opacity: 1 !important;
+        }
+
+        [data-testid="stSidebar"] [data-testid="stSelectbox"] div[data-baseweb="select"] svg {
+          color: #FFD300 !important;
+          fill: #FFD300 !important;
+        }
+
+        [data-baseweb="popover"] ul,
+        [data-baseweb="popover"] [role="listbox"] {
+          border: 1px solid #FFD300 !important;
+          border-radius: 2px !important;
+          background: #050505 !important;
+        }
+
+        [data-baseweb="popover"] li,
+        [data-baseweb="popover"] [role="option"] {
+          background: #050505 !important;
+          color: #FFD300 !important;
+        }
+
+        [data-baseweb="popover"] li:hover,
+        [data-baseweb="popover"] [role="option"]:hover,
+        [data-baseweb="popover"] [role="option"][aria-selected="true"] {
+          background: #151515 !important;
+          color: #FFD300 !important;
+        }
         </style>
         """,
         unsafe_allow_html=True,
@@ -113,11 +164,11 @@ def require_demo_access(
     title: str | None = None,
     description: str = "Enter the demo password to view the sample dashboard.",
 ) -> bool:
-    if access_is_granted(secrets, session_state):
-        return True
-
     resolved_title = title or _caller_app_title() or "Spotify Advertising Creative Intelligence"
     _render_access_theme(resolved_title)
+
+    if access_is_granted(secrets, session_state):
+        return True
 
     _, center, _ = st.columns([1, 1.35, 1])
     with center:
