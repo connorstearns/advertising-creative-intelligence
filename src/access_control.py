@@ -100,55 +100,62 @@ def _render_access_theme(title: str) -> None:
           outline: none !important;
         }
 
-        [data-testid="stSidebar"] [data-testid="stSelectbox"] div[data-baseweb="select"] > div {
+        html body .stApp [data-testid="stSidebar"] [data-testid="stSelectbox"] div[data-baseweb="select"] > div {
           min-height: 2.55rem;
-          border: 1px solid #FFD300 !important;
+          border: 1px solid #4A4A4A !important;
           border-radius: 2px !important;
-          background: #050505 !important;
+          background: #111111 !important;
+          color: #FFD300 !important;
           box-shadow: none !important;
         }
 
-        [data-testid="stSidebar"] [data-testid="stSelectbox"] div[data-baseweb="select"] > div:hover {
-          background: #151515 !important;
+        html body .stApp [data-testid="stSidebar"] [data-testid="stSelectbox"] div[data-baseweb="select"] > div:hover {
+          border-color: #FFD300 !important;
+          background: #171717 !important;
         }
 
-        [data-testid="stSidebar"] [data-testid="stSelectbox"] div[data-baseweb="select"] > div:focus-within {
+        html body .stApp [data-testid="stSidebar"] [data-testid="stSelectbox"] div[data-baseweb="select"] > div:focus-within {
           border-color: #FFD300 !important;
-          background: #050505 !important;
+          background: #111111 !important;
           box-shadow: 0 0 0 1px #FFD300 !important;
         }
 
-        [data-testid="stSidebar"] [data-testid="stSelectbox"] div[data-baseweb="select"] span,
-        [data-testid="stSidebar"] [data-testid="stSelectbox"] div[data-baseweb="select"] input {
+        html body .stApp [data-testid="stSidebar"] [data-testid="stSelectbox"] div[data-baseweb="select"] span,
+        html body .stApp [data-testid="stSidebar"] [data-testid="stSelectbox"] div[data-baseweb="select"] input {
           color: #FFD300 !important;
           -webkit-text-fill-color: #FFD300 !important;
           font-weight: 700;
           opacity: 1 !important;
         }
 
-        [data-testid="stSidebar"] [data-testid="stSelectbox"] div[data-baseweb="select"] svg {
+        html body .stApp [data-testid="stSidebar"] [data-testid="stSelectbox"] div[data-baseweb="select"] svg {
           color: #FFD300 !important;
           fill: #FFD300 !important;
         }
 
-        [data-baseweb="popover"] ul,
-        [data-baseweb="popover"] [role="listbox"] {
-          border: 1px solid #FFD300 !important;
+        html body [data-baseweb="popover"] ul,
+        html body [data-baseweb="popover"] [role="listbox"] {
+          border: 1px solid #4A4A4A !important;
           border-radius: 2px !important;
-          background: #050505 !important;
+          background: #111111 !important;
         }
 
-        [data-baseweb="popover"] li,
-        [data-baseweb="popover"] [role="option"] {
-          background: #050505 !important;
+        html body [data-baseweb="popover"] li,
+        html body [data-baseweb="popover"] [role="option"] {
+          background: #111111 !important;
+          color: #FFFFFF !important;
+        }
+
+        html body [data-baseweb="popover"] li:hover,
+        html body [data-baseweb="popover"] [role="option"]:hover,
+        html body [data-baseweb="popover"] [role="option"][aria-selected="true"] {
+          background: #1A1A1A !important;
           color: #FFD300 !important;
         }
 
-        [data-baseweb="popover"] li:hover,
-        [data-baseweb="popover"] [role="option"]:hover,
-        [data-baseweb="popover"] [role="option"][aria-selected="true"] {
-          background: #151515 !important;
-          color: #FFD300 !important;
+        html body [data-baseweb="popover"] [role="option"] p,
+        html body [data-baseweb="popover"] [role="option"] span {
+          color: inherit !important;
         }
         </style>
         """,
