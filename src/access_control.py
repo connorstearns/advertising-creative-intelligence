@@ -47,16 +47,25 @@ def access_is_granted(
 
 
 def _caller_app_title() -> str | None:
-    """Read APP_TITLE from the calling Streamlit app when it is available."""
+    """Resolve the title from the active Streamlit entrypoint."""
     frame = inspect.currentframe()
     try:
-        require_frame = frame.f_back if frame else None
-        caller_frame = require_frame.f_back if require_frame else None
-        value = caller_frame.f_globals.get("APP_TITLE") if caller_frame else None
-        if value is None:
-            return None
-        title = str(value).strip()
-        return title or None
+        current = frame.f_back if frame else None
+        while current is not None:
+            value = current.f_globals.get("APP_TITLE")
+            if value is not None:
+                title = str(value).strip()
+                if title:
+                    return title
+
+            filename = str(current.f_code.co_filename).replace("\\", "/").lower()
+            if filename.endswith("/codecademy_app.py") or filename == "codecademy_app.py":
+                return "Codecademy Creative Intelligence"
+            if filename.endswith("/app.py") or filename == "app.py":
+                return "Spotify Advertising Creative Intelligence"
+
+            current = current.f_back
+        return None
     finally:
         del frame
 
@@ -93,7 +102,11 @@ def require_demo_access(
                 key=PASSWORD_KEY,
                 placeholder="Enter password",
             )
-            submitted = st.form_submit_button("View dashboard", width="stretch")
+            submitted = st.form_submit_button(
+                "View dashboard",
+                type="primary",
+                width="stretch",
+            )
         if submitted:
             if access_is_granted(secrets, session_state, password):
                 st.rerun()
