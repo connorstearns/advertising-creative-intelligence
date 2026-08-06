@@ -107,21 +107,51 @@ APP_CSS = f"""
   font-weight: 700;
 }}
 
-[data-testid="stSelectbox"] > div > div {{
-  border-color: #4A4A4A;
-  border-radius: 2px;
-  background: #121212;
-  color: #FFFFFF;
+/* Keep the growth-motion selector visually distinct from the dark navigation. */
+[data-testid="stSidebar"] [data-testid="stSelectbox"] div[data-baseweb="select"] > div {{
+  min-height: 2.55rem;
+  border: 1px solid #9A988F !important;
+  border-radius: 2px !important;
+  background: #F4F1E8 !important;
+  box-shadow: none !important;
 }}
 
-[data-baseweb="popover"] ul {{
-  border: 1px solid #4A4A4A;
-  border-radius: 2px;
-  background: #111111;
+[data-testid="stSidebar"] [data-testid="stSelectbox"] div[data-baseweb="select"] > div:focus-within {{
+  border-color: var(--yellow) !important;
+  box-shadow: 0 0 0 1px var(--yellow) !important;
 }}
 
-[data-baseweb="popover"] li:hover {{
-  background: rgba(255, 211, 0, 0.14);
+[data-testid="stSidebar"] [data-testid="stSelectbox"] div[data-baseweb="select"] span,
+[data-testid="stSidebar"] [data-testid="stSelectbox"] div[data-baseweb="select"] input {{
+  color: #050505 !important;
+  -webkit-text-fill-color: #050505 !important;
+  font-weight: 650;
+  opacity: 1 !important;
+}}
+
+[data-testid="stSidebar"] [data-testid="stSelectbox"] div[data-baseweb="select"] svg {{
+  color: #050505 !important;
+  fill: #050505 !important;
+}}
+
+[data-baseweb="popover"] ul,
+[data-baseweb="popover"] [role="listbox"] {{
+  border: 1px solid #9A988F;
+  border-radius: 2px;
+  background: #F4F1E8;
+}}
+
+[data-baseweb="popover"] li,
+[data-baseweb="popover"] [role="option"] {{
+  background: #F4F1E8;
+  color: #050505 !important;
+}}
+
+[data-baseweb="popover"] li:hover,
+[data-baseweb="popover"] [role="option"]:hover,
+[data-baseweb="popover"] [role="option"][aria-selected="true"] {{
+  background: var(--yellow) !important;
+  color: #050505 !important;
 }}
 
 h1, h2, h3 {{
