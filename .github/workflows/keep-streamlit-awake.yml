@@ -1,5 +1,3 @@
-"""Wake one or more deployed Streamlit apps and verify they are running."""
-
 from __future__ import annotations
 
 import os
