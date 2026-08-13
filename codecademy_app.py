@@ -128,13 +128,16 @@ with st.sidebar:
     )
     st.divider()
     st.markdown(render_status_chip("Illustrative demo", "neutral"), unsafe_allow_html=True)
-    st.caption("Sample data only · Not client performance")
+    st.caption("Illustrative signal framework · Sample values only")
 
 if page == "Activation Role Performance":
     render_section_header(
         "Activation Role Performance",
-        "Is each activation role doing its job? Current-period signals are compared with the prior period to diagnose health and direct the next production action.",
+        "Is each activation role doing its job? Illustrative current-period signals are compared with the prior period to diagnose health and direct the next production action.",
         "Role-specific learning system",
+    )
+    st.caption(
+        "Metric definitions, source availability, and benchmarks would be validated with Codecademy during implementation."
     )
     selected_role = st.radio(
         "Activation role",
