@@ -61,108 +61,6 @@ def _caller_app_title() -> str | None:
         del frame
 
 
-def _render_access_theme(title: str) -> None:
-    """Apply app-specific Codecademy interface overrides when needed."""
-    if "codecademy" not in title.casefold():
-        return
-
-    st.markdown(
-        """
-        <style>
-        [data-testid="stFormSubmitButton"] button {
-          min-height: 2.55rem;
-          border: 1px solid #FFD300 !important;
-          border-radius: 2px !important;
-          background: #050505 !important;
-          color: #FFD300 !important;
-          box-shadow: none !important;
-        }
-
-        [data-testid="stFormSubmitButton"] button p,
-        [data-testid="stFormSubmitButton"] button span,
-        [data-testid="stFormSubmitButton"] button div {
-          color: #FFD300 !important;
-          font-weight: 750;
-        }
-
-        [data-testid="stFormSubmitButton"] button:hover {
-          border-color: #FFD300 !important;
-          background: #151515 !important;
-          color: #FFD300 !important;
-        }
-
-        [data-testid="stFormSubmitButton"] button:focus,
-        [data-testid="stFormSubmitButton"] button:focus-visible {
-          border-color: #FFD300 !important;
-          background: #050505 !important;
-          color: #FFD300 !important;
-          box-shadow: 0 0 0 1px #FFD300 !important;
-          outline: none !important;
-        }
-
-        html body .stApp [data-testid="stSidebar"] [data-testid="stSelectbox"] div[data-baseweb="select"] > div {
-          min-height: 2.55rem;
-          border: 1px solid #4A4A4A !important;
-          border-radius: 2px !important;
-          background: #111111 !important;
-          color: #FFD300 !important;
-          box-shadow: none !important;
-        }
-
-        html body .stApp [data-testid="stSidebar"] [data-testid="stSelectbox"] div[data-baseweb="select"] > div:hover {
-          border-color: #FFD300 !important;
-          background: #171717 !important;
-        }
-
-        html body .stApp [data-testid="stSidebar"] [data-testid="stSelectbox"] div[data-baseweb="select"] > div:focus-within {
-          border-color: #FFD300 !important;
-          background: #111111 !important;
-          box-shadow: 0 0 0 1px #FFD300 !important;
-        }
-
-        html body .stApp [data-testid="stSidebar"] [data-testid="stSelectbox"] div[data-baseweb="select"] span,
-        html body .stApp [data-testid="stSidebar"] [data-testid="stSelectbox"] div[data-baseweb="select"] input {
-          color: #FFD300 !important;
-          -webkit-text-fill-color: #FFD300 !important;
-          font-weight: 700;
-          opacity: 1 !important;
-        }
-
-        html body .stApp [data-testid="stSidebar"] [data-testid="stSelectbox"] div[data-baseweb="select"] svg {
-          color: #FFD300 !important;
-          fill: #FFD300 !important;
-        }
-
-        html body [data-baseweb="popover"] ul,
-        html body [data-baseweb="popover"] [role="listbox"] {
-          border: 1px solid #4A4A4A !important;
-          border-radius: 2px !important;
-          background: #111111 !important;
-        }
-
-        html body [data-baseweb="popover"] li,
-        html body [data-baseweb="popover"] [role="option"] {
-          background: #111111 !important;
-          color: #FFFFFF !important;
-        }
-
-        html body [data-baseweb="popover"] li:hover,
-        html body [data-baseweb="popover"] [role="option"]:hover,
-        html body [data-baseweb="popover"] [role="option"][aria-selected="true"] {
-          background: #1A1A1A !important;
-          color: #FFD300 !important;
-        }
-
-        html body [data-baseweb="popover"] [role="option"] p,
-        html body [data-baseweb="popover"] [role="option"] span {
-          color: inherit !important;
-        }
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
-
-
 def require_demo_access(
     secrets: Mapping,
     session_state: MutableMapping,
@@ -171,11 +69,10 @@ def require_demo_access(
     title: str | None = None,
     description: str = "Enter the demo password to view the sample dashboard.",
 ) -> bool:
-    resolved_title = title or _caller_app_title() or "Spotify Advertising Creative Intelligence"
-    _render_access_theme(resolved_title)
-
     if access_is_granted(secrets, session_state):
         return True
+
+    resolved_title = title or _caller_app_title() or "Spotify Advertising Creative Intelligence"
 
     _, center, _ = st.columns([1, 1.35, 1])
     with center:
