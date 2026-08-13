@@ -1,4 +1,4 @@
-"""Wake one or more deployed Streamlit apps for demos."""
+"""Wake one or more deployed Streamlit apps and verify they are running."""
 
 from __future__ import annotations
 
@@ -15,18 +15,62 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
 
-LOAD_TIMEOUT_SECONDS = 45
-WAKE_BUTTON_TIMEOUT_SECONDS = 12
-POST_WAKE_WAIT_SECONDS = 20
-ALREADY_AWAKE_WAIT_SECONDS = 5
+LOAD_TIMEOUT_SECONDS = 60
+WAKE_BUTTON_TIMEOUT_SECONDS = 20
+WAKE_COMPLETE_TIMEOUT_SECONDS = 120
+ALREADY_AWAKE_WAIT_SECONDS = 8
+
+
+SLEEP_INDICATORS = (
+    "gone to sleep due to inactivity",
+    "get this app back up",
+)
+
+WAKE_BUTTON_XPATH = (
+    "//button["
+    "contains("
+    "translate(normalize-space(.), "
+    "'ABCDEFGHIJKLMNOPQRSTUVWXYZ', "
+    "'abcdefghijklmnopqrstuvwxyz'), "
+    "'get this app back up'"
+    ") "
+    "or contains("
+    "translate(normalize-space(.), "
+    "'ABCDEFGHIJKLMNOPQRSTUVWXYZ', "
+    "'abcdefghijklmnopqrstuvwxyz'), "
+    "'wake up app'"
+    ") "
+    "or contains("
+    "translate(normalize-space(.), "
+    "'ABCDEFGHIJKLMNOPQRSTUVWXYZ', "
+    "'abcdefghijklmnopqrstuvwxyz'), "
+    "'wake'"
+    ")"
+    "]"
+)
 
 
 def get_app_urls() -> list[str]:
+    """
+    Read Streamlit app URLs from environment variables.
+
+    Preferred:
+        STREAMLIT_APP_URLS=url1,url2,url3
+
+    Fallback:
+        STREAMLIT_APP_URL=url1
+    """
     urls_value = os.environ.get("STREAMLIT_APP_URLS", "").strip()
+
     if urls_value:
-        return [url.strip() for url in urls_value.split(",") if url.strip()]
+        return [
+            url.strip()
+            for url in urls_value.split(",")
+            if url.strip()
+        ]
 
     single_url = os.environ.get("STREAMLIT_APP_URL", "").strip()
+
     if single_url:
         return [single_url]
 
@@ -34,96 +78,291 @@ def get_app_urls() -> list[str]:
 
 
 def build_driver() -> webdriver.Chrome:
+    """Create a headless Chrome browser for GitHub Actions."""
     options = Options()
+
     options.add_argument("--headless=new")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--disable-gpu")
     options.add_argument("--window-size=1440,1200")
+
     return webdriver.Chrome(options=options)
 
 
 def wait_for_page_load(driver: webdriver.Chrome) -> None:
+    """Wait until the browser reports that the page has loaded."""
     WebDriverWait(driver, LOAD_TIMEOUT_SECONDS).until(
-        lambda browser: browser.execute_script("return document.readyState") == "complete"
+        lambda browser: browser.execute_script(
+            "return document.readyState"
+        ) == "complete"
     )
+
+
+def page_is_sleeping(driver: webdriver.Chrome) -> bool:
+    """Return True when the Streamlit sleep screen is visible."""
+    page_text = driver.page_source.lower()
+
+    return any(
+        indicator in page_text
+        for indicator in SLEEP_INDICATORS
+    )
+
+
+def wait_until_awake(driver: webdriver.Chrome) -> bool:
+    """
+    Wait for Streamlit's sleeping screen to disappear.
+
+    Returns True if the app wakes successfully.
+    """
+    try:
+        WebDriverWait(
+            driver,
+            WAKE_COMPLETE_TIMEOUT_SECONDS,
+        ).until(
+            lambda browser: not page_is_sleeping(browser)
+        )
+
+        return True
+
+    except TimeoutException:
+        return False
 
 
 def wake_url(driver: webdriver.Chrome, url: str) -> bool:
-    print(f"Opening Streamlit app: {url}", flush=True)
-    driver.set_page_load_timeout(LOAD_TIMEOUT_SECONDS)
-    driver.get(url)
-    wait_for_page_load(driver)
+    """Open one Streamlit app and wake it if necessary."""
+    print("=" * 70, flush=True)
+    print(f"Checking Streamlit app: {url}", flush=True)
 
-    wake_button_xpath = (
-        "//button[contains("
-        "translate(normalize-space(.), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), "
-        "'wake up app'"
-        ")]"
+    try:
+        driver.set_page_load_timeout(LOAD_TIMEOUT_SECONDS)
+        driver.get(url)
+        wait_for_page_load(driver)
+
+    except TimeoutException:
+        print(
+            f"Initial page load timed out for: {url}",
+            file=sys.stderr,
+            flush=True,
+        )
+        return False
+
+    #
+    # CASE 1:
+    # App appears to already be running.
+    #
+    if not page_is_sleeping(driver):
+        print(
+            "No Streamlit sleep screen detected. "
+            "App appears to already be awake.",
+            flush=True,
+        )
+
+        # Keep the browser on the page briefly so Streamlit
+        # receives a real browser session rather than a quick hit.
+        time.sleep(ALREADY_AWAKE_WAIT_SECONDS)
+
+        # Re-check before declaring success.
+        if page_is_sleeping(driver):
+            print(
+                "Sleep screen appeared after initial load. "
+                "Proceeding with wake attempt.",
+                flush=True,
+            )
+        else:
+            print(
+                f"Wake check succeeded for: {url}",
+                flush=True,
+            )
+            return True
+
+    #
+    # CASE 2:
+    # Streamlit sleeping screen detected.
+    #
+    print(
+        "Streamlit sleep screen detected.",
+        flush=True,
     )
 
     try:
-        wake_button = WebDriverWait(driver, WAKE_BUTTON_TIMEOUT_SECONDS).until(
-            EC.element_to_be_clickable((By.XPATH, wake_button_xpath))
+        wake_button = WebDriverWait(
+            driver,
+            WAKE_BUTTON_TIMEOUT_SECONDS,
+        ).until(
+            EC.element_to_be_clickable(
+                (By.XPATH, WAKE_BUTTON_XPATH)
+            )
         )
+
     except TimeoutException:
         print(
-            "No 'Wake up app' button appeared; the app is likely already awake.",
+            "The app is sleeping, but no wake button could be found.",
+            file=sys.stderr,
             flush=True,
         )
-        time.sleep(ALREADY_AWAKE_WAIT_SECONDS)
-        return True
+        return False
 
-    print("Found 'Wake up app' button; clicking it.", flush=True)
-    wake_button.click()
-    time.sleep(POST_WAKE_WAIT_SECONDS)
-    print("Wake click completed.", flush=True)
+    print(
+        "Wake button found. Clicking it...",
+        flush=True,
+    )
+
+    try:
+        driver.execute_script(
+            "arguments[0].scrollIntoView({block: 'center'});",
+            wake_button,
+        )
+
+        wake_button.click()
+
+    except WebDriverException:
+        # Sometimes normal Selenium clicking can be intercepted
+        # by Streamlit's frontend. Fall back to JavaScript.
+        try:
+            driver.execute_script(
+                "arguments[0].click();",
+                wake_button,
+            )
+
+        except WebDriverException as exc:
+            print(
+                f"Could not click wake button: {exc}",
+                file=sys.stderr,
+                flush=True,
+            )
+            return False
+
+    print(
+        "Wake button clicked. Waiting for app to start...",
+        flush=True,
+    )
+
+    if not wait_until_awake(driver):
+        print(
+            "Streamlit remained on the sleep screen after "
+            f"{WAKE_COMPLETE_TIMEOUT_SECONDS} seconds.",
+            file=sys.stderr,
+            flush=True,
+        )
+        return False
+
+    print(
+        "Sleep screen disappeared.",
+        flush=True,
+    )
+
+    #
+    # Give the actual Streamlit application a few seconds
+    # to establish its frontend/backend session.
+    #
+    time.sleep(10)
+
+    if page_is_sleeping(driver):
+        print(
+            "Sleep screen returned after wake attempt.",
+            file=sys.stderr,
+            flush=True,
+        )
+        return False
+
+    print(
+        f"App successfully awake: {url}",
+        flush=True,
+    )
+
     return True
 
 
 def wake_all(urls: Iterable[str]) -> int:
+    """Wake all configured Streamlit apps."""
     driver: webdriver.Chrome | None = None
+
     successes = 0
     failures = 0
 
     try:
         driver = build_driver()
+
         for url in urls:
             try:
-                if wake_url(driver, url):
+                success = wake_url(driver, url)
+
+                if success:
                     successes += 1
-                    print(f"Wake check succeeded for: {url}", flush=True)
-            except (TimeoutException, WebDriverException) as exc:
+                else:
+                    failures += 1
+
+            except (
+                TimeoutException,
+                WebDriverException,
+            ) as exc:
                 failures += 1
-                print(f"Wake check failed for {url}: {exc}", flush=True)
+
+                print(
+                    f"Unexpected browser failure for {url}: {exc}",
+                    file=sys.stderr,
+                    flush=True,
+                )
+
     except WebDriverException as exc:
-        print(f"Browser runtime failure: {exc}", file=sys.stderr, flush=True)
+        print(
+            f"Could not start Chrome: {exc}",
+            file=sys.stderr,
+            flush=True,
+        )
         return 3
+
     finally:
         if driver is not None:
             driver.quit()
-            print("Closed headless browser.", flush=True)
 
-    if successes == 0 and failures > 0:
-        print("All Streamlit app URLs failed to load.", file=sys.stderr, flush=True)
-        return 1
+            print(
+                "Closed headless browser.",
+                flush=True,
+            )
+
+    print("=" * 70, flush=True)
 
     print(
-        f"Wake run complete: {successes} succeeded, {failures} failed.",
+        f"Wake run complete: "
+        f"{successes} succeeded, "
+        f"{failures} failed.",
         flush=True,
     )
+
+    #
+    # IMPORTANT:
+    # Do not allow a partially successful run to appear green.
+    #
+    if failures > 0:
+        print(
+            "One or more Streamlit apps failed the wake check.",
+            file=sys.stderr,
+            flush=True,
+        )
+        return 1
+
     return 0
 
 
 def main() -> int:
+    """Program entry point."""
     urls = get_app_urls()
+
     if not urls:
         print(
-            "No Streamlit app URL provided. Set STREAMLIT_APP_URLS or STREAMLIT_APP_URL.",
+            "No Streamlit app URLs provided. "
+            "Set STREAMLIT_APP_URLS or STREAMLIT_APP_URL.",
             file=sys.stderr,
             flush=True,
         )
         return 2
+
+    print(
+        f"Found {len(urls)} Streamlit app(s) to check.",
+        flush=True,
+    )
 
     return wake_all(urls)
 
