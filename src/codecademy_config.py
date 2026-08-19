@@ -17,7 +17,7 @@ ROLE_ORDER = [
     "Demand Creation",
     "Reinforcement",
     "Demand Capture",
-    "Customer Growth",
+    "Learner Growth",
 ]
 
 ROLE_PERFORMANCE = {
@@ -36,7 +36,7 @@ ROLE_PERFORMANCE = {
         "question": "Is the experience converting expressed intent into the right next step?",
         "recommendation": "Improve query-to-offer alignment, pathway clarity, or destination relevance.",
     },
-    "Customer Growth": {
+    "Learner Growth": {
         "job": "Turn an initial learning need into ongoing progression, retention, and customer value.",
         "question": "Is the system expanding engagement and guiding learners to the next capability?",
         "recommendation": "Improve next-skill recommendations, cross-sell sequencing, or re-engagement logic.",
